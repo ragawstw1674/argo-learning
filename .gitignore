@@ -1,0 +1,5 @@
+argocd-server-deployment.yaml
+nginx-rollout-application.yaml
+application.yaml
+application.yml
+.DS_Store

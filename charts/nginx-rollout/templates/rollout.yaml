@@ -1,0 +1,44 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: nginx-rollout
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-rollout
+  template:
+    metadata:
+      labels:
+        app: nginx-rollout
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nginx-secret
+                  key: api-key
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: message
+            - name: secret-volume
+              mountPath: /usr/share/nginx/html/secret.html
+              subPath: api-key
+      volumes:
+        - name: config-volume
+          configMap:
+            name: nginx-config
+        - name: secret-volume
+          secret:
+            secretName: nginx-secret
+  strategy:
+    blueGreen: 
+      activeService: nginx-active-service
+      previewService: nginx-preview-service
+      autoPromotionEnabled: false
